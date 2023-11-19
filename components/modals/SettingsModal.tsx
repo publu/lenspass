@@ -30,10 +30,8 @@ const metadata = {
 }
 
 const chains = [mainnet, arbitrum]
-const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
 
-// 3. Create modal
-createWeb3Modal({ wagmiConfig, projectId, chains })
+const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
 
 
 export function SettingsModal({
@@ -44,6 +42,8 @@ export function SettingsModal({
   const dispatch = useDispatch();
   const self = useSelf();
   const hasSetupPassword = useHasSetupPassword();
+
+  createWeb3Modal({ wagmiConfig, projectId, chains })
 
   const close = useCallback(() => {
     dispatch({ type: "set-modal", modal: { modalType: "none" } });

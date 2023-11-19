@@ -134,6 +134,7 @@ export function SecondPartyTicketVerifyScreen() {
     if (verifyResult.outcome === VerifyOutcome.NotVerified) {
       // The "invalid" icon is used for PCDs which are formally valid but
       // unknown
+      // unknown in this case means it's a good PCD, but not part of the official zupass list
       //icon = icons.verifyInvalid;
       icon = icons.verifyValid;
       if (
