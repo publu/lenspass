@@ -126,7 +126,7 @@ export function LoginScreen() {
       {redirectedFromAction ? (
         <>
           <TextCenter>
-            <H2>ZUPASS</H2>
+            <H2>Lens Pass</H2>
             <Spacer h={24} />
             To complete this request, you need to either log into your existing
             Zupass account, or create a new one.
@@ -135,10 +135,11 @@ export function LoginScreen() {
       ) : (
         <>
           <TextCenter>
-            <H1>ZUPASS</H1>
+            <H1>Lens Pass</H1>
             <Spacer h={24} />
             This is an experimental personal cryptography manager, powered by
             Zero-Knowledge.
+            Forked from ZuPass to enable Lens profiles and on-chain tickets
           </TextCenter>
         </>
       )}

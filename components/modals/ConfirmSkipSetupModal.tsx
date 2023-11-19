@@ -23,7 +23,7 @@ export function ConfirmSkipSetupModal({
       <H2>Skipping Password Setup</H2>
       <Spacer h={24} />
       <TextCenter>
-        You are creating a Zupass without setting a password. This means that
+        You are creating a LensPass without setting a password. This means that
         your PCDs will be encrypted by a key stored on our server. You can
         always set a password later to reinforce your account with
         end-to-end-encryption.

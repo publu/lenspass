@@ -50,7 +50,7 @@ export function UpgradeAccountModal() {
     <Container>
       <H2>Upgrade Your Account</H2>
       <Spacer h={24} />
-      Zupass now supports logging in with a password! To continue to use Zupass,
+      Lens Pass now supports logging in with a password! To continue to use Lens Pass,
       you must choose a password. Make sure to remember it, otherwise you will
       lose access to all your PCDs.
       <Spacer h={24} />
