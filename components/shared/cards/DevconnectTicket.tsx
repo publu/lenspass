@@ -19,12 +19,12 @@ import { ToggleSwitch } from "../../core/Toggle";
 import { icons } from "../../icons";
 
 function makeTicketIdVerifyLink(ticketId: string): string {
-  const link = `https://zupass.org/#/checkin-by-id?id=${encodeURIComponent(ticketId)}`;
+  const link = `https://www.lenspass.xyz/#/checkin-by-id?id=${encodeURIComponent(ticketId)}`;
   return link;
 }
 
 function makeTicketIdPCDVerifyLink(pcdStr: string): string {
-  const link = `https://zupass.org/#/verify?pcd=${encodeURIComponent(
+  const link = `https://www.lenspass.xyz/#/verify?pcd=${encodeURIComponent(
     pcdStr
   )}`;
   return link;
