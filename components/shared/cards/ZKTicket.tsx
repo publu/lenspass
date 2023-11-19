@@ -23,7 +23,7 @@ import { ToggleSwitch } from "../../core/Toggle";
 import { icons } from "../../icons";
 
 function makeTicketIdVerifyLink(ticketId: string): string {
-  const link = `https://zupass.org/#/verify?id=${encodeURIComponent(
+  const link = `https://www.lenspass.xyz/#/verify?id=${encodeURIComponent(
     Buffer.from(
       JSON.stringify({ ticketId, timestamp: Date.now().toString() })
     ).toString("base64")

@@ -60,11 +60,11 @@ export function validateEmail(email: string): boolean {
 
 function getVerifyUrlPrefixes(): string[] {
   return [
-    `https://zupass.org/#/verify`,
+    `https://www.lenspass.xyz/#/verify`,
     `https://zupass.org#/verify`,
-    `https://zupass.org/#/checkin`,
+    `https://www.lenspass.xyz/#/checkin`,
     `https://zupass.org#/checkin`,
-    `https://zupass.org/#/checkin-by-id`,
+    `https://www.lenspass.xyz/#/checkin-by-id`,
     `https://zupass.org#/checkin-by-id`
   ];
 }
