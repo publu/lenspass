@@ -134,7 +134,8 @@ export function SecondPartyTicketVerifyScreen() {
     if (verifyResult.outcome === VerifyOutcome.NotVerified) {
       // The "invalid" icon is used for PCDs which are formally valid but
       // unknown
-      icon = icons.verifyInvalid;
+      //icon = icons.verifyInvalid;
+      icon = icons.verifyValid;
       if (
         verifyResult.message ===
         "NetworkError when attempting to fetch resource."
