@@ -245,7 +245,7 @@ export function SecondPartyTicketVerifyScreen() {
       <TextCenter>
         <img draggable="false" width="90" height="90" src={icon} />
         <Spacer h={24} />
-        {verifyResult.outcome === VerifyOutcome.KnownTicketType || (
+        {(
           <>
             <H4 col="var(--accent-dark)">PROOF VERIFIED.</H4>
           </>
