@@ -135,7 +135,7 @@ const SearchButton = ({
     await toast
       .promise(
         new Promise<void>((resolve) => {
-          setTimeout(resolve, 4000);
+          setTimeout(resolve, 1000);
         }).then(
           () =>
             new Promise<void>((resolve, reject) => {
