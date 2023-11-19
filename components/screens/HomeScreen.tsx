@@ -30,10 +30,95 @@ import { LoadingIssuedPCDs } from "../shared/LoadingIssuedPCDs";
 import { PCDCardList } from "../shared/PCDCardList";
 import { FrogFolder } from "./FrogScreens/FrogFolder";
 import { FrogHomeSection } from "./FrogScreens/FrogHomeSection";
+import { createWeb3Modal, defaultWagmiConfig, useWeb3Modal } from '@web3modal/wagmi/react'
+import { useAccount } from 'wagmi'
+import { LensConfig, production } from '@lens-protocol/react-web'
+import { bindings as wagmiBindings } from '@lens-protocol/wagmi'
+import { LensProvider as Provider } from '@lens-protocol/react-web'
+import {
+  useProfile, usePublications, Profile, LimitType, PublicationType
+} from '@lens-protocol/react-web'
 
+const lensConfig: LensConfig = {
+  bindings: wagmiBindings(),
+  environment: production,
+}
 export const HomeScreen = React.memo(HomeScreenImpl);
 
 const FOLDER_QUERY_PARAM = "folder";
+
+// apiFunctions.js
+import axios from 'axios';
+
+export const fetchUniversalProfile = async (identity) => {
+  try {
+    const response = await axios.get(`https://api.web3.bio/profile/${identity}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching universal profile:', error);
+    return null;
+  }
+};
+
+export const fetchENSProfile = async (identity) => {
+  try {
+    const response = await axios.get(`https://api.web3.bio/profile/ens/${identity}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching ENS profile:', error);
+    return null;
+  }
+};
+
+export const fetchLensProfile = async (identity) => {
+    try {
+      const response = await axios.get(`https://api.web3.bio/profile/lens/${identity}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching ENS profile:', error);
+      return null;
+    }
+};
+
+export const fetchFarcasterProfile = async (identity) => {
+    try {
+        const response = await axios.get(`https://api.web3.bio/profile/farcaster/${identity}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching ENS profile:', error);
+        return null;
+    }
+};
+
+export const fetchDotBitProfile = async (identity) => {
+    try {
+        const response = await axios.get(`https://api.web3.bio/profile/dotbit/${identity}`);
+        return response.data;
+    } catch (error) {
+        console.error('Error fetching ENS profile:', error);
+        return null;
+    }
+};
+
+import { WagmiConfig } from 'wagmi'
+import { arbitrum, mainnet } from 'viem/chains'
+
+// 1. Get projectId
+const projectId = '48c9cd8b7bc6a96a823061743a2def6b'
+
+// 2. Create wagmiConfig
+const metadata = {
+  name: 'Web3Modal',
+  description: 'Web3Modal Connection',
+  url: 'https://web3modal.com',
+  icons: ['https://avatars.githubusercontent.com/u/37784886']
+}
+
+const chains = [mainnet, arbitrum]
+const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata })
+
+// 3. Create modal
+createWeb3Modal({ wagmiConfig, projectId, chains })
 
 /**
  * Show the user their Zupass, an overview of cards / PCDs.
@@ -105,20 +190,95 @@ export function HomeScreenImpl() {
   useLayoutEffect(() => {
     document.body.scrollTop = document.documentElement.scrollTop = 0;
   }, []);
+  const { open } = useWeb3Modal()
+  const [showLensProfile, setShowLensProfile] = useState(false);
+  const toggleLensProfile = useCallback(() => {
+    setShowLensProfile(prev => !prev);
+  }, []);
 
   if (self == null) return null;
+  const [profile, setProfile] = useState(null);
+  useEffect(() => {
+    const lensAddress = JSON.parse(localStorage.getItem('lens.production.wallets'))?.data?.[0]?.address;
+    if (lensAddress) {
+      fetchLensProfile(lensAddress)
+        .then(profileData => setProfile(profileData))
+        .catch(error => {
+          console.error('Error fetching Lens profile:', error);
+        });
+    }
+  }, []);
 
   return (
-    <>
+    <WagmiConfig config={wagmiConfig}>
+      <Provider config={lensConfig}>
       <MaybeModal />
       <AppContainer bg="gray">
         <Spacer h={24} />
         <AppHeader />
         <Spacer h={24} />
+        <Placeholder minH={50}>
+          <FolderExplorerContainer>
+            {(isRoot && false &&
+              <>
+                <button onClick={() => open()}>Open Connect Modal</button>
+                <button onClick={() => open({ view: 'Networks' })}>Open Network Modal</button>
+              </>
+            )}
+          </FolderExplorerContainer>
+        </Placeholder>
         <Placeholder minH={540}>
           <LoadingIssuedPCDs />
+          {isRoot && localStorage.getItem('lens.production.wallets') && (
+            <FolderExplorerContainer>
+              <FolderCard
+                key={"LensProfile"}
+                onFolderClick={() => setShowLensProfile(prev => !prev)}
+                folder={`Lens Pass`}
+              />
+              {showLensProfile && (
+                <div style={{ height: '450px', paddingTop: '15px' }}>
+                  {(() => {
+                    console.log("profile:", profile)
+                    return profile ? (
+                      <div style={{ textAlign: 'center' }}>
+                        <img src={profile.avatar} alt={profile.displayName} style={{ width: '200px', height: '200px', borderRadius: '50%' }} />
+                        <h2>{profile.displayName}</h2>
+                        <p>{profile.description}</p>
+                        <p>{profile.location}</p>
+                        {profile.links?.hey && (
+                          <div>
+                            <a href={profile.links.hey} target="_blank" rel="noopener noreferrer">
+                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(profile.links.hey.link)}`} alt={`QR code for ${profile.links.handle}`} />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ) : <div>Loading...</div>;
+                  })()}
+                </div>
+              )}
+            </FolderExplorerContainer>
+          )}
           {!(foldersInFolder.length === 0 && isRoot) && (
             <FolderExplorerContainer>
+              {false && (
+                <>
+                <FolderCard
+                  key={"LineaTicket"}
+                  onFolderClick={() => open()}
+                  folder={"Linea Ticket"}
+                />
+                <FolderCard
+                  key={"zkSyncTicket"}
+                  onFolderClick={() => open()}
+                  folder={"zkSync Ticket"}
+                />
+                <FolderCard
+                  key={"MantleTicket"}
+                  onFolderClick={() => open()}
+                  folder={"Mantle Ticket"}
+                /></>)}
               {!isRoot && (
                 <FolderDetails
                   noChildFolders={foldersInFolder.length === 0}
@@ -128,7 +288,6 @@ export function HomeScreenImpl() {
               )}
               {foldersInFolder
                 .filter(
-                  // /FrogCrypto is a special and rendered by <FrogFolder />
                   (folder) => folder !== FrogCryptoFolderName
                 )
                 .sort((a, b) => a.localeCompare(b))
@@ -165,7 +324,8 @@ export function HomeScreenImpl() {
         </Placeholder>
         <Spacer h={24} />
       </AppContainer>
-    </>
+      </Provider>
+    </WagmiConfig>
   );
 }
 

@@ -1,0 +1,276 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.7.0;
+
+/**
+ * @dev Interface of the ERC20 standard as defined in the EIP.
+ */
+interface IERC20 {
+    /**
+     * @dev Returns the amount of tokens in existence.
+     */
+    function totalSupply() external view returns (uint256);
+
+    /**
+     * @dev Returns the amount of tokens owned by `account`.
+     */
+    function balanceOf(address account) external view returns (uint256);
+
+    /**
+     * @dev Moves `amount` tokens from the caller's account to `recipient`.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transfer(address recipient, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Returns the remaining number of tokens that `spender` will be
+     * allowed to spend on behalf of `owner` through {transferFrom}. This is
+     * zero by default.
+     *
+     * This value changes when {approve} or {transferFrom} are called.
+     */
+    function allowance(address owner, address spender) external view returns (uint256);
+
+    /**
+     * @dev Sets `amount` as the allowance of `spender` over the caller's tokens.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * IMPORTANT: Beware that changing an allowance with this method brings the risk
+     * that someone may use both the old and the new allowance by unfortunate
+     * transaction ordering. One possible solution to mitigate this race
+     * condition is to first reduce the spender's allowance to 0 and set the
+     * desired value afterwards:
+     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     *
+     * Emits an {Approval} event.
+     */
+    function approve(address spender, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Moves `amount` tokens from `sender` to `recipient` using the
+     * allowance mechanism. `amount` is then deducted from the caller's
+     * allowance.
+     *
+     * Returns a boolean value indicating whether the operation succeeded.
+     *
+     * Emits a {Transfer} event.
+     */
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+
+    /**
+     * @dev Emitted when `value` tokens are moved from one account (`from`) to
+     * another (`to`).
+     *
+     * Note that `value` may be zero.
+     */
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    /**
+     * @dev Emitted when the allowance of a `spender` for an `owner` is set by
+     * a call to {approve}. `value` is the new allowance.
+     */
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+
+contract FootballBetting {
+    uint256 public constant STAKE_AMOUNT = 1 ether;
+    uint256 public constant VOTING_PERIOD = 24 hours;
+    uint256 public constant MAX_BET = 1 ether;
+
+    struct Bet {
+        address tokenA;
+        address tokenB;
+        uint256 startTime;
+        uint256 endTime;
+        string gameInfoIPFS;
+        mapping(address => uint256) betsTokenA;
+        mapping(address => uint256) betsTokenB;
+        bool settled;
+        address winnerToken;
+        uint256 voteEndTime;
+        mapping(address => address) stakerVotes;
+        mapping(address => uint256) voteCounts;
+        mapping(address => bool) hasVotedCorrectly;
+    }
+
+    struct Staker {
+        uint256 stakeAmount;
+        bool isVerified;
+    }
+
+    mapping(address => Staker) public stakers;
+    mapping(uint256 => Bet) public bets;
+    uint256 public nextBetId;
+
+    address[] public stakerAddresses;
+
+    function depositStake() external payable {
+        require(msg.value == STAKE_AMOUNT, "Incorrect stake amount");
+        if (!stakers[msg.sender].isVerified) {
+            stakerAddresses.push(msg.sender);
+        }
+        stakers[msg.sender].stakeAmount += msg.value;
+        stakers[msg.sender].isVerified = true;
+    }
+
+    function withdrawStake() external {
+        require(stakers[msg.sender].isVerified, "Not a verified staker");
+        require(stakers[msg.sender].stakeAmount >= STAKE_AMOUNT, "Insufficient staked amount");
+
+        stakers[msg.sender].stakeAmount -= STAKE_AMOUNT;
+        if (stakers[msg.sender].stakeAmount == 0) {
+            stakers[msg.sender].isVerified = false;
+            removeStakerAddress(msg.sender);
+        }
+        payable(msg.sender).transfer(STAKE_AMOUNT);
+    }
+
+    function removeStakerAddress(address staker) internal {
+        for (uint256 i = 0; i < stakerAddresses.length; i++) {
+            if (stakerAddresses[i] == staker) {
+                stakerAddresses[i] = stakerAddresses[stakerAddresses.length - 1];
+                stakerAddresses.pop();
+                break;
+            }
+        }
+    }
+
+    function getStakerAddresses() external view returns (address[] memory) {
+        return stakerAddresses;
+    }
+
+    function createBet(address _tokenA, address _tokenB, uint256 _startTime, uint256 _endTime, string memory _gameInfoIPFS) external {
+        require(stakers[msg.sender].isVerified, "Not a verified staker");
+        require(_startTime < _endTime, "Invalid time range");
+
+        Bet storage bet = bets[nextBetId];
+        bet.tokenA = _tokenA;
+        bet.tokenB = _tokenB;
+        bet.startTime = _startTime;
+        bet.endTime = _endTime;
+        bet.gameInfoIPFS = _gameInfoIPFS;
+        bet.voteEndTime = _endTime + VOTING_PERIOD;
+        nextBetId++;
+    }
+
+    function placeBet(uint256 betId, address token, uint256 amount) external {
+        require(amount <= MAX_BET, "Bet amount exceeds maximum limit");
+        Bet storage bet = bets[betId];
+        require(block.timestamp >= bet.startTime && block.timestamp <= bet.endTime, "Betting time has ended or not started");
+        require(token == bet.tokenA || token == bet.tokenB, "Invalid token for this bet");
+
+        IERC20(token).transferFrom(msg.sender, address(this), amount);
+
+        if (token == bet.tokenA) {
+            bet.betsTokenA[msg.sender] += amount;
+        } else {
+            bet.betsTokenB[msg.sender] += amount;
+        }
+    }
+
+    function voteOutcome(uint256 betId, address chosenWinnerToken) external {
+        require(stakers[msg.sender].isVerified, "Not a verified staker");
+        Bet storage bet = bets[betId];
+        require(block.timestamp <= bet.voteEndTime && block.timestamp > bet.endTime, "Voting period is not active");
+
+        bet.stakerVotes[msg.sender] = chosenWinnerToken;
+        bet.voteCounts[chosenWinnerToken]++;
+    }
+
+    function certifyOutcome(uint256 betId) external {
+        Bet storage bet = bets[betId];
+        require(block.timestamp > bet.voteEndTime, "Voting period has not ended");
+        require(!bet.settled, "Bet already settled");
+
+        uint256 countTokenA = bet.voteCounts[bet.tokenA];
+        uint256 countTokenB = bet.voteCounts[bet.tokenB];
+        require(countTokenA != countTokenB, "Tie in votes, outcome cannot be determined");
+
+        address correctToken = countTokenA > countTokenB ? bet.tokenA : bet.tokenB;
+        address incorrectToken = countTokenA > countTokenB ? bet.tokenB : bet.tokenA;
+
+        bet.winnerToken = correctToken;
+        bet.settled = true;
+
+        distributeSlashedBalances(betId, correctToken, incorrectToken);
+    }
+
+    function distributeSlashedBalances(uint256 betId, address correctToken, address incorrectToken) internal {
+        Bet storage bet = bets[betId];
+        uint256 totalSlashedAmount = 0;
+
+        for (uint256 i = 0; i < nextBetId; i++) {
+            address stakerAddress = address(uint160(i));
+            if (bet.stakerVotes[stakerAddress] != correctToken) {
+                uint256 slashedAmount = stakers[stakerAddress].stakeAmount;
+                stakers[stakerAddress].stakeAmount -= slashedAmount;
+                totalSlashedAmount += slashedAmount;
+            } else {
+                bet.hasVotedCorrectly[stakerAddress] = true;
+            }
+        }
+
+        for (uint256 i = 0; i < nextBetId; i++) {
+            address stakerAddress = address(uint160(i));
+            if (bet.hasVotedCorrectly[stakerAddress]) {
+                uint256 reward = totalSlashedAmount * stakers[stakerAddress].stakeAmount / getTotalStakes(betId);
+                stakers[stakerAddress].stakeAmount += reward;
+            }
+        }
+    }
+
+    function getTotalStakes(uint256 betId) internal view returns (uint256) {
+        Bet storage bet = bets[betId];
+        uint256 totalStakes = 0;
+        for (uint256 i = 0; i < nextBetId; i++) {
+            address stakerAddress = address(uint160(i));
+            if (bet.stakerVotes[stakerAddress] != address(0)) {
+                totalStakes += stakers[stakerAddress].stakeAmount;
+            }
+        }
+        return totalStakes;
+    }
+
+    function withdrawWinnings(uint256 betId) external {
+        Bet storage bet = bets[betId];
+        require(bet.settled, "Bet is not settled yet");
+
+        uint256 userBetAmount;
+        uint256 totalWinningBets;
+        address winningToken = bet.winnerToken;
+
+        if (winningToken == bet.tokenA) {
+            userBetAmount = bet.betsTokenA[msg.sender];
+            totalWinningBets = getTotalBetAmount(betId, bet.tokenA);
+        } else {
+            userBetAmount = bet.betsTokenB[msg.sender];
+            totalWinningBets = getTotalBetAmount(betId, bet.tokenB);
+        }
+
+        require(userBetAmount > 0, "No winning bet placed");
+
+        uint256 totalLostBets = winningToken == bet.tokenA ? getTotalBetAmount(betId, bet.tokenB) : getTotalBetAmount(betId, bet.tokenA);
+        uint256 winnings = userBetAmount * totalLostBets / totalWinningBets;
+
+        IERC20(winningToken).transfer(msg.sender, winnings);
+    }
+
+    function getTotalBetAmount(uint256 betId, address token) internal view returns (uint256) {
+        Bet storage bet = bets[betId];
+        uint256 totalAmount = 0;
+        if (token == bet.tokenA) {
+            for (uint256 i = 0; i < nextBetId; i++) {
+                totalAmount += bet.betsTokenA[address(uint160(i))];
+            }
+        } else {
+            for (uint256 i = 0; i < nextBetId; i++) {
+                totalAmount += bet.betsTokenB[address(uint160(i))];
+            }
+        }
+        return totalAmount;
+    }
+    
+}

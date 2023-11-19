@@ -66,6 +66,7 @@ import {
 import { registerServiceWorker } from "../src/registerServiceWorker";
 import { AppState, StateEmitter } from "../src/state";
 import { pollUser } from "../src/user";
+import ChilizBetz from "../components/modals/ChilizBetz";
 
 class App extends React.Component<object, AppState> {
   state = undefined as AppState | undefined;
@@ -359,6 +360,7 @@ function RouterImpl() {
           <Route path="subscriptions" element={<SubscriptionsScreen />} />
           <Route path="add-subscription" element={<AddSubscriptionScreen />} />
           <Route path="telegram" element={<HomeScreen />} />
+          <Route path="bets" element={<ChilizBetz />} />
           <Route path="pond-control" element={<FrogManagerScreen />} />
           <Route
             path="frogscriptions/:feedCode"

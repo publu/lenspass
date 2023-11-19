@@ -13,6 +13,10 @@
     "analyze-bundle": "yarn build && esbuild-visualizer --metadata ./public/js/bundle-size.json --filename public/bundle-stats.html && open public/bundle-stats.html"
   },
   "dependencies": {
+    "@lens-protocol/metadata": "^1.0.5",
+    "@lens-protocol/react-web": "^2.0.0-alpha.21",
+    "@lens-protocol/wagmi": "^3.0.0-alpha.18",
+    "@metamask/sdk-react": "^0.12.1",
     "@pcd/eddsa-frog-pcd": "0.0.1",
     "@pcd/eddsa-pcd": "0.3.0",
     "@pcd/eddsa-ticket-pcd": "0.3.0",
@@ -36,14 +40,17 @@
     "@pcd/zk-eddsa-frog-pcd": "0.0.1",
     "@rollbar/react": "^0.11.1",
     "@semaphore-protocol/identity": "^3.14.0",
+    "@web3modal/wagmi": "^3.3.2",
     "boring-avatars": "^1.10.1",
     "broadcast-channel": "^5.3.0",
     "dotenv": "^16.0.3",
     "email-validator": "^2.0.4",
+    "ethers": "^5.7.2",
     "fast-json-stable-stringify": "^2.1.0",
     "handlebars": "^4.7.7",
     "isomorphic-timers-promises": "^1.0.1",
     "lodash": "^4.17.21",
+    "nodemon": "^3.0.1",
     "pretty-ms": "^8.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -62,7 +69,10 @@
     "tsparticles": "^2.12.0",
     "tsparticles-engine": "^2.12.0",
     "typewriter-effect": "^2.21.0",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "viem": "^1.19.3",
+    "wagmi": "^1.4.7",
+    "web3card": "^1.0.1"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -84,6 +94,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "express": "^4.18.2",
     "mocha": "^10.2.0",
+    "nodemon": "^3.0.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.1",
     "tsparticles-plugin-emitters": "^2.12.0",

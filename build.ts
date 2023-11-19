@@ -49,7 +49,8 @@ const appOpts: BuildOptions = {
     })
   ],
   loader: {
-    ".svg": "dataurl"
+    ".svg": "dataurl",
+    ".js": "jsx", // Add this line to treat .js files as JSX
   },
   outdir: "public/js",
   metafile: true,

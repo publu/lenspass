@@ -18,6 +18,7 @@ import { RequireAddPasswordModal } from "./RequireAddPasswordModal";
 import { ResolveSubscriptionErrorModal } from "./ResolveSubscriptionError";
 import { SettingsModal } from "./SettingsModal";
 import { UpgradeAccountModal } from "./UpgradeAccountModal";
+import * as ChilizBets from "./ChilizBetz";
 
 export function MaybeModal({
   fullScreen,
