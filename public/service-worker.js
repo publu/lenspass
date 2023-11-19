@@ -2037,7 +2037,7 @@
 
   // src/worker/service-worker.ts
   var swSelf = self;
-  var SW_BUILD_ID = "bffb48a9-3c41-4017-8cee-3a2a91003d41";
+  var SW_BUILD_ID = "85040ea2-cc2c-42f1-b73e-37efda3fd5d8";
   var FETCH_TIMEOUT_MS = 5e3;
   var CACHE_VERSION = "v2";
   var EPHEMERAL_CACHE_NAME = `${CACHE_VERSION}-${SW_BUILD_ID}`;

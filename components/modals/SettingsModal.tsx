@@ -74,7 +74,7 @@ export function SettingsModal({
         )}
         {
           !isConnected && (
-            <Button onClick={() => open()}>
+            <Button onClick={() => { open(); close(); }}>
               Connect Wallet
             </Button>
           )
@@ -86,10 +86,13 @@ export function SettingsModal({
             </Button>
           ) : (
             !data && ownedProfiles?.length && isConnected && (
-              <Button onClick={() => login({
-                address: address || '',
-                profileId: ownedProfiles[ownedProfiles.length - 1].id
-              })}>
+              <Button onClick={() => {
+                login({
+                  address: address || '',
+                  profileId: ownedProfiles[ownedProfiles.length - 1].id
+                });
+                close();
+              }}>
                 Login with Lens
               </Button>
             )
