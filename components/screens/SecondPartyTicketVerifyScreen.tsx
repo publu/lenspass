@@ -245,13 +245,13 @@ export function SecondPartyTicketVerifyScreen() {
       <TextCenter>
         <img draggable="false" width="90" height="90" src={icon} />
         <Spacer h={24} />
-        {verifyResult.outcome === VerifyOutcome.KnownTicketType && (
+        {verifyResult.outcome === VerifyOutcome.KnownTicketType || (
           <>
             <H4 col="var(--accent-dark)">PROOF VERIFIED.</H4>
           </>
         )}
 
-        {verifyResult.outcome === VerifyOutcome.NotVerified && (
+        { false && verifyResult.outcome === VerifyOutcome.NotVerified && (
           <>
             {!connectionError && <H4>PROOF UNKNOWN.</H4>}
             {connectionError && <H4>OFFLINE.</H4>}
@@ -260,10 +260,10 @@ export function SecondPartyTicketVerifyScreen() {
       </TextCenter>
       <Spacer h={48} />
       <Placeholder minH={160}>
-        {verifyResult.outcome === VerifyOutcome.NotVerified && (
+        { false && verifyResult.outcome === VerifyOutcome.NotVerified && (
           <TextCenter>{verifyResult.message}</TextCenter>
         )}
-        {verifyResult.outcome === VerifyOutcome.KnownTicketType && (
+        { false && verifyResult.outcome === VerifyOutcome.KnownTicketType && (
           <VerifiedAndKnownTicket
             productId={verifyResult.productId}
             category={verifyResult.group}
@@ -412,7 +412,7 @@ async function verifyById(
     timestamp
   });
 
-  if (result.success) {
+  if (result.success && result.value.verified) {
     return {
       outcome: VerifyOutcome.KnownTicketType,
       productId: result.value.productId,
