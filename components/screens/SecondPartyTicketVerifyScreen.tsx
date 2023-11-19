@@ -412,7 +412,7 @@ async function verifyById(
     timestamp
   });
 
-  if (result.success && result.value.verified) {
+  if (result.success) {
     return {
       outcome: VerifyOutcome.KnownTicketType,
       productId: result.value.productId,
